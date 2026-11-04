@@ -1,8 +1,8 @@
 <!--
-    MetaSchemaVersion:  META-1.0
+    MetaSchemaVersion:  1.0
     QueryName:          File Sharing Activity
     Intent:
-        - Primary:      Security & Auditing
+        - Primary:      Security and Auditing
         - Secondary:    Network
     Platform:           WIN7, WIN8, WIN10, WIN2008, WIN2012, WIN2016, WIN2019, WIN2022
     SecurityProfile:    Member Server, Workstation, Domain Controllers
@@ -10,7 +10,7 @@
         - Name:         Alejandro Rodriguez
         - Alias:        Username/AzJRC
         - Resource:     Github/WefManagementTool
-        - Resource:     URL/https://github.com/AzJRC/Log-Ingestion
+        - Resource:     URL/https://github.com/rodajrc/open-secops
     Reference:
         - Name:         Michael
         - Alias:        Username/mdecrevoisier
@@ -18,11 +18,14 @@
         - Resource:     URL/https://github.com/mdecrevoisier/Windows-auditing-baseline
     QueryVersion:       1.0
     QueryDate:          2025-06-27
-    Tag:                Technique/T1021.002, T1222.001, T1187
+    Tag:                Technique/T1021.002
+    Tag:                Technique/T1222.001
+    Tag:                Technique/T1187
     Tag:                Category/Object Access
     Tag:                Subcategory/File Share
     Tag:                Action/Resource Sharing
-    Tag:                Misc/SMB, Admin Shares
+    Tag:                Misc/SMB
+    Tag:                Misc/Admin Shares
     RequiresAudit:      Yes
     RequiredSettings:
         - AuditPolicy:  Object Access/File Share

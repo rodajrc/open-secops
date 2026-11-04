@@ -9,7 +9,7 @@
         - Name:         Alejandro Rodriguez
         - Alias:        Username/AzJRC
         - Resource:     Github/WefManagementTool
-        - Resource:     URL/https://github.com/AzJRC/Log-Ingestion
+        - Resource:     URL/https://github.com/rodajrc/open-secops
     Reference:
         - Resource:     Github/wef-guidance
         - Resource:     URL/https://github.com/Security-Experts-Community/wef-guidance/blob/main/EventSubscriptionsCollections/EventCategoriesBased/%5BQuery%5D%2010-Network.xml       

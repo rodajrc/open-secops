@@ -25,7 +25,7 @@ Each `QUERY.XML` must include a comment block following this structure:
         - Name:         Alejandro Rodriguez
         - Alias:        Username/AzJRC
         - Resource:     Github/WefManagementTool
-        - Resource:     URL/https://github.com/AzJRC/Log-Ingestion
+        - Resource:     URL/https://github.com/rodajrc/open-secops
     Reference:
         - Name:         Michel de CREVOISIER
         - Alias:        mdecrevoisier

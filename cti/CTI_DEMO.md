@@ -150,14 +150,14 @@ In Red Hat's documentation, the **ELEMENTS** are defined as **keywords, topics, 
 - The organization **strategy**
 - The organization **mission** and **vision**
 
-> [!INFO]
+> [!NOTE]
 > Altough it is supposed that the ELEMENTS are derived from high-level strategic documents, it is also true that these information can be derived from stakeholder engagements, interviews, and meetings.
 
 Next, the **FUNCTION** of an element is a short phrase or keyword that provides context about what has to be **protected about that ELEMENT** to mantain it. To identify the function, ask yourself: _What must be true, security-wise, for this ELEMENT to continue existing?_
 
 Finally, the **ASSETS** are the actual, tangible or non-tangible components in the organization that support the ELEMENT.
 
-> [!INFO]
+> [!NOTE]
 > Using the AI generated case, an identity-related **ELEMENT** could be _"Real-time payment orchestration and embedded finance for e-commerce and marketplaces"_. Then, the **FUNCTION** could be _"Ensuring the continuous availability of the orchestration and embedded finance services"_. Finally, the supporting **ASSET** could be _"Propietary Software and APIs"_.
 
 In summary, each step MUST narrow your focus. From an abastract idea (the ELEMENT) to a security-meaningul idea (the FUNCTION), to finally an actual tangible thing that MUST be protected (ASSETS)

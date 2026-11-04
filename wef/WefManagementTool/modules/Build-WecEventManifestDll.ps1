@@ -10,7 +10,7 @@
 
 .PARAMETER ManPath
     Optinal Path to the manifest (.man) file that defines the event channels and providers.
-    Specify this parameter only if you did not used the script Write-WecEventManifest with the default 
+    Specify this parameter only if you did not used the script Write-EventManifestFile with the default 
     $CustomEventsMAN parameter.
 
 .PARAMETER CscPath
