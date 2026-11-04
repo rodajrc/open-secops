@@ -80,7 +80,7 @@ CommandLine: "C:\Windows\system32\fltMC.exe" unload SysmonDrv
 
 Deploying software in a big environment can be a little bit tricky; however, intelligent use of a Windows DC, GPO settings, and PowerShell script can make this task possible.
 
-If you want to deploy and configure Windows Sysmon following best practices, refer to the documentation file of [Sysmon Deployment](./docs/windows-sysmon-deployment.md) in this repository.
+If you want to deploy and configure Windows Sysmon following best practices, refer to the documentation file of [Sysmon Deployment](./docs/WINDOWS_SYSMON_DEPLOYMENT.md) in this repository.
 
 ### Linux sysmon
 
@@ -92,7 +92,7 @@ Upon Sysmon installation, a driver (SysmonDrv) and a service (Sysmon) will be in
 - Monitor `Event ID 1: ProcessCreate`
 - Monitor `Event ID 5: ProcessTerminate`
 - Monitor `Event ID 6: DriverLoad`
-- Monitor `Event ID 1: FileCreateTime`
+- Monitor `Event ID 2: FileCreateTime`
 - `SHA256` will be used to hash all images detected by Sysmon.
 
 Moreover, it is good to know that Sysmon will create 2 registry keys under the following paths (assuming default driver name and service name were used when installing Sysmon):
