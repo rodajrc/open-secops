@@ -1,2 +1,2 @@
 Files/
-QueriesDB/*.meta.json
+QueriesDB/**/*.meta.json

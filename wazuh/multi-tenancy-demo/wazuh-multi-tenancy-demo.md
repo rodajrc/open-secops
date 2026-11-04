@@ -1,7 +1,10 @@
+# Wazuh Multi-Tenancy Demo
+
 The strategy is to tag logs with a unique tenant identifier and then use Role-Based Access Control (RBAC) at both the data (OpenSearch) and application (Wazuh) layers to enforce isolation.
 ## Enable Multi-tenancy
 
-> [!info] > For simplicity in this DEMO, I am writing the documentation assuming two customer tenants: _Tenant A_ for Customer A, and _Tenant B_ for Cutomer B.
+> [!NOTE]
+> For simplicity in this DEMO, I am writing the documentation assuming two customer tenants: _Tenant A_ for Customer A, and _Tenant B_ for Customer B.
 
 Start by editing the `/etc/wazuh-dashboard/opensearch_dashboards.yml` configuration file.
 
@@ -18,7 +21,8 @@ opensearch_security.multitenancy.tenants.preferred: ["Global", "Private"]
 uiSettings.overrides.defaultRoute: /app/wz-home?security_tenant=global
 ```
 
-> [!warning] > It is not clear why this step is required. Further research is needed.
+> [!WARNING]
+> It is not clear why this step is required. Further research is needed.
 ## Segregate Agents with Groups
 
 To separate which agents belongs to who, create agent groups following the instructions.
@@ -46,7 +50,8 @@ To separate which agents belongs to who, create agent groups following the instr
 
 The `tenant_id` label will be attached to every log event from agents in this group. The value of the label must be a unique identifier, like an _UUID_ (The value of `tenant_id` in the example above is not an _UUID_ because its too short).
 
-> [!info] > Modifications to the `agent.conf` for a particular (tenant) group is appended to the `ossec.conf` configuration of the enrolled agent.
+> [!NOTE]
+> Modifications to the `agent.conf` for a particular (tenant) group is appended to the `ossec.conf` configuration of the enrolled agent.
 
 ## Enroll Agents with Automatic Group Membership
 
@@ -54,7 +59,8 @@ Simply go to Wazuh agent enrollment page and copy the command in the system wher
 
 Make sure to select the appropriate group for the corresponding agent.
 
-> [!warning] > Automatic and secure agent self-enrollment is not documented yet. In the meantime.
+> [!WARNING]
+> Automatic and secure agent self-enrollment is not documented yet. In the meantime, enroll agents manually and select the tenant group for each one.
 
 ## Create an Index to Support Multiple Tenants (Single-node)
 
@@ -62,7 +68,8 @@ In this part of the configuration, you will need to do some changes to the follo
 
 ### Configure the Wazuh Template
 
-> [!warning] > It is not clear if this file should be modified directly in the Wazuh Server component or instead you should download the [template from the Wazuh GitHub Repository](https://raw.githubusercontent.com/wazuh/wazuh/v4.13.1/extensions/elasticsearch/7.x/wazuh-template.json). This section documents the steps I followed to set up the single-indexer node to support multiple tenants, including officially and not officially documented steps .
+> [!WARNING]
+> It is not clear if this file should be modified directly in the Wazuh Server component or instead you should download the [template from the Wazuh GitHub Repository](https://raw.githubusercontent.com/wazuh/wazuh/v4.13.1/extensions/elasticsearch/7.x/wazuh-template.json). This section documents the steps I followed to set up the single-indexer node to support multiple tenants, including officially and not officially documented steps .
 
 **Officially documented**
 
@@ -92,7 +99,8 @@ INDEXER_IP_ADDRESS=<0.0.0.0>
 curl -XPUT -k -u $INDEXER_USERNAME:$INDEXER_PASSWORD 'https://$INDEXER_IP_ADDRESS:9200/_template/wazuh' -H 'Content-Type: application/json' -d @template.json
 ```
 
-> [!info] > You can obtain the `INDEXER_USERNAME` and `INDEXER_PASSWORD` with the following command: `tar -axf wazuh-install-files.tar wazuh-install-files/wazuh-passwords.txt -O | grep -P "\'admin\'" -A 1`. You must run this command in your working directory where `wazuh-install-files.tar` is located.
+> [!NOTE]
+> You can obtain the `INDEXER_USERNAME` and `INDEXER_PASSWORD` with the following command: `tar -axf wazuh-install-files.tar wazuh-install-files/wazuh-passwords.txt -O | grep -P "\'admin\'" -A 1`. You must run this command in your working directory where `wazuh-install-files.tar` is located.
 
 Once you run the `curl` command, you should get a response like this.
 
@@ -159,9 +167,11 @@ Finally, open the file `/usr/share/filebeat/module/wazuh/alerts/ingest/pipeline.
 },
 ```
 
-> [!warning] > Depending on the want you want to achieve, you might need to remove the default `date_index_name` preprocessor rule, or append the new preprocessor before or after the default one.
+> [!WARNING]
+> Depending on what you want to achieve, you might need to remove the default `date_index_name` preprocessor rule, or append the new preprocessor before or after the default one.
 
-> [!infoi] > The value of the `tenant_id` label will depend on the _UUID_ or whichever identifier method you chose in the [[#Segregate Agents with Groups]] section.
+> [!NOTE]
+> The value of the `tenant_id` label will depend on the _UUID_ or whichever identifier method you chose in the [Segregate Agents with Groups](#segregate-agents-with-groups) section.
 
 You might want to refer to [Elasticsearch ingest pipelines documentation](https://www.elastic.co/docs/manage-data/ingest/transform-enrich/ingest-pipelines#ingest-prerequisites) to learn how to create more complex preprocessor rules.
 
@@ -173,7 +183,8 @@ To apply the changes, it is critical to run the following command.
 sudo filebeat setup --pipelines --modules wazuh
 ```
 
-> [!info] > The following commands are also needed; though, it is unknown how they actually have an effect to Wazuh. Further research is required.
+> [!NOTE]
+> The following commands are also needed; though, it is unknown how they actually have an effect to Wazuh. Further research is required.
 
 ```
 # Restart Filebeat
@@ -193,22 +204,23 @@ sudo systemctl restart wazuh-dashboard
 
 Navigate to **Dashboard Management** > **Index Patterns** and select **Create index pattern**. Create the index pattern by typing the pattern `tenant-alerts-*` in the **Index pattern name** field. Then choose the `@timestamp` field as the primery field for use with the global time filter. Finally, create the index pattern.
 
-![[1_index_patterns_tenant_alerts.png]]
+![1 index patterns tenant alerts](./images/1_index_patterns_tenant_alerts.png)
 
 Upon creation of the index pattern, new indexes should be created automatically. There are several ways to validate this.
 
 1. Navigate to **Indexer Management > Index Management > Indexes** and locate your new indexes.
 
-![[2_generated_indexes_tenants.png]]
+![2 generated indexes tenants](./images/2_generated_indexes_tenants.png)
 
-> [!note] > It might be necessary to ingest logs first to generate the index file.
+> [!NOTE]
+> It might be necessary to ingest logs first to generate the index file.
 
 2. Another way is to navigate to **Indexer Management > Dev Tools** and run the following query.
 
 ```http
 GET /_cat/indices/tenant-*?v   # Replace 'tenant' with your keyword
 
-# Output (Trucated)
+# Output (Truncated)
 
 health status index                             uuid
 green  open   tenant-alerts-b-2025.10.06        1Y7KMCmQS7We_ScnliOjTg
@@ -217,28 +229,32 @@ green  open   tenant-alerts-a-2025.10.06        LH_9ZakWTH-1Mng4Bh7Dng
 
 3. Inspect the logs manually in the **Discovery** dashboard.
 
-![[3_discovery_tenant_index.png]]
+![3 discovery tenant index](./images/3_discovery_tenant_index.png)
 
-> [!success] > Congratulations! You have successfully tagged all data that is being ingested into Wazuh.
+> [!TIP]
+> Congratulations! You have successfully tagged all data that is being ingested into Wazuh.
 ## Create Indexes to Support Multiple Tenants (Multi-node)
 
-> [!warning] > Not documented yet. However, this [Wazuh blog](https://wazuh.com/blog/wazuh-multi-site-implementation/) offers clear guidance to set up this architecture.
+> [!WARNING]
+> Not documented yet. However, this [Wazuh blog](https://wazuh.com/blog/wazuh-multi-site-implementation/) offers clear guidance to set up this architecture.
 ## Access Control Mechanisms for Multi-Tenancy
 
 To create tenants, it is necessary to create the appropriate access control mechanisms in the indexer and server components of Wazuh.
 
 ### Unknown settings
 
-> [!warning] > The following settings didn't seem to have any effect in the access control mechanism configured earlier, yet they are officially documented. Further research is required.
+> [!WARNING]
+> The following settings didn't seem to have any effect in the access control mechanism configured earlier, yet they are officially documented. Further research is required.
 
 changes in `/usr/share/wazuh-dashboard/data/wazuh/config/wazuh.yml`:
 - `ip.selector`: Set to `true`
 - `ip.ignore`: Added entry `wazuh-alerts-*` 
-###  Indexer Users and Roles
+### Indexer Users and Roles
 
 First, open the file `/usr/share/wazuh-dashboard/data/wazuh/config/wazuh.yml` and make sure that that `run_as` is set to `true`.
 
-> [!info] > This setting simply enables role mapping.
+> [!NOTE]
+> This setting simply enables role mapping.
 
 Navigate to **Indexer Manager > Security > Internal Users** and create two user accounts.
 1. Select **Create internal user**
@@ -249,11 +265,13 @@ Once the users are created, navigate to the **Roles** tab and select **Create ro
 1. For the cluster permission choose `cluster_composite_ops_ro`
 2. For the first indexer permission, the **index** is `*`, with permission `read`.
 
-> [!warning] > Failing to add the index permission above will block the user account at the login process. However, the index permission above will allow the user to access all index patterns. Further research is required.
+> [!WARNING]
+> Failing to add the index permission above will block the user account at the login process. However, the index permission above will allow the user to access all index patterns. Further research is required.
 
 3. Select **Add another index permission**. Type `wazuh-*` for the index pattern. Then, in the **Field level security** section, select `Exclude` with pattern `*`.
 
-> [!info] > The index permission above is a workaround to minimize the over permissive rule that was created before.
+> [!NOTE]
+> The index permission above is a workaround to minimize the over permissive rule that was created before.
 
 4. Select **Add another index permission**. Type `wazuh-monitoring-*` for the index pattern. Then, in the **Index permissions** section select `read`. Finally, in the **Document level security** section type the following:
 
@@ -269,7 +287,8 @@ Once the users are created, navigate to the **Roles** tab and select **Create ro
 }
 ```
 
-> [!info] > This setting ensures that the user can only see the Wazuh agents grouped in the `tenant-a`
+> [!NOTE]
+> This setting ensures that the user can only see the Wazuh agents grouped in the `tenant-a`
 
 5. Select **Add another index permission**. Type `tenant-alerts-*` for the index pattern. Then, in the **Index Permissions** select `read`. Finally, in the **Document level security** section, type the following entry:
 
@@ -293,15 +312,17 @@ Once the users are created, navigate to the **Roles** tab and select **Create ro
 }
 ```
 
-> [!info] > This setting ensures that the user can only see events tagged with the `tenant_id` label and the corresponding value.
+> [!NOTE]
+> This setting ensures that the user can only see events tagged with the `tenant_id` label and the corresponding value.
 
 You will need to repeat the steps for every tenant user.
 
-###  Wazuh Policies
+### Wazuh Policies
 
 Now navigate to **Server Management > Security > Policies**. Depending on your needs, you will need to create shared policies for the users of all tenants (like allowing tenant admins to enroll agents) and specific policies for the users of each tenant (like reading data of specific agents).
 
-> [!info] > I will only document how to create the policies for one tenant user, but keep in mind that the process is the same for any tenant user.
+> [!NOTE]
+> I will only document how to create the policies for one tenant user, but keep in mind that the process is the same for any tenant user.
 
 #### Policy `tenant-a-agent-read`
 
@@ -312,7 +333,8 @@ Now navigate to **Server Management > Security > Policies**. Depending on your n
 5. Select the effect: `Allow`
 6. Apply and create the policy
 
-> [!info] > This policy allows to read the data of any agent (`agent:read`) which is grouped in `tenant-a` (`agent:group:tenant-a`).
+> [!NOTE]
+> This policy allows to read the data of any agent (`agent:read`) which is grouped in `tenant-a` (`agent:group:tenant-a`).
 
 #### Policy `tenant-a-group-read`
 
@@ -323,7 +345,8 @@ Now navigate to **Server Management > Security > Policies**. Depending on your n
 5. Select the effect: `Allow`
 6. Apply and create the policy
 
-> [!info] > This policy allows to read the group (`group:read`) that is identified as `tenant-a` (`group:read:tenant-a`). Notice that the **ID** of a group is the name of the group.
+> [!NOTE]
+> This policy allows to read the group (`group:read`) that is identified as `tenant-a` (`group:read:tenant-a`). Notice that the **ID** of a group is the name of the group.
 
 #### Policy `tenant-any-agent-create`
 
@@ -334,11 +357,13 @@ Now navigate to **Server Management > Security > Policies**. Depending on your n
 5. Select the effect: `Allow`
 6. Apply and create the policy
 
-> [!info] > This policy allows to create the agents (`agent:create`) without any restriction (`*:*:*`).
+> [!NOTE]
+> This policy allows to create the agents (`agent:create`) without any restriction (`*:*:*`).
 
-> [!warning] > This policy might not be recommended in all scenarios. Moreover, there is no clear way to enable the **agent group** selection tab or a method to assign the agent group on behalf of the user. Further research is required.
+> [!WARNING]
+> This policy might not be recommended in all scenarios. Moreover, there is no clear way to enable the **agent group** selection tab or a method to assign the agent group on behalf of the user. Further research is required.
 
-###  Wazuh Roles and Role Mapping
+### Wazuh Roles and Role Mapping
 
 Finally, navigate to the **Roles** tab and create two roles:
 1. `tenant-a-role`
@@ -350,9 +375,10 @@ Once that's done, navigate to `Roles mapping` and create two mappings:
 1. `tenant-a-mapping`
 2. `tenant-b-mapping`
 
-To each mapping, assign the recently created roles and the corresponding users that were created earlier in the section [[#Indexer Users and Roles]]
+To each mapping, assign the recently created roles and the corresponding users that were created earlier in the section [Indexer Users and Roles](#indexer-users-and-roles)
 
-> [!success] > Congratulations! You have set up multi-tenancy with two tenant admin users. Try to login with each user and validate that `tenant-a-admin` can only see the events of the `tenant-a` group. The same applies for the `tenant-b-admin`.
+> [!TIP]
+> Congratulations! You have set up multi-tenancy with two tenant admin users. Try to login with each user and validate that `tenant-a-admin` can only see the events of the `tenant-a` group. The same applies for the `tenant-b-admin`.
 
 ## Additional References
 

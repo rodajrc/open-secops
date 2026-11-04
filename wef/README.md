@@ -17,7 +17,7 @@ One of the best resource I have found in the Microsoft Official Documentation th
 
 ### Collectors and Forwarders
 
-Windows Event Forwarding depends on two main components: Windows Event Collectors (WECs) and Windows Event Forwarders (or WEF clients). The former are the choosen workstations or servers that will collect the Windows Event Logs from the WEF clients.
+Windows Event Forwarding depends on two main components: Windows Event Collectors (WECs) and Windows Event Forwarders (or WEF clients). The former are the chosen workstations or servers that will collect the Windows Event Logs from the WEF clients.
 
 According to Microsoft documentation, a unique WEC can support around 3000 events per second, but this is very subjective (There is no mention of the specs of the computer receiving the events). However, most community-based suggestions and recommendations say that a WEC can indeed allocate around 2000 to 4000 workstations.
 
@@ -27,12 +27,12 @@ A well deployed WEF architecture will load balance event forwarding in enough WE
 
 ### Configuration through GPOs
 
-Windows Event Forwarding is often configured in Windows Domains, as this makes the implementation more straighforward and simple. Follow the steps to set up WEF successfully.
+Windows Event Forwarding is often configured in Windows Domains, as this makes the implementation more straightforward and simple. Follow the steps to set up WEF successfully.
 
 
 1. **Determine the number of WECs you will need in your environment**
 
-
+Plan for one WEC per 2,000 to 4,000 WEC clients (see [Collectors and Forwarders](#collectors-and-forwarders)). Beyond that range, or when a collector cannot keep up with the event rate, add WECs and split the clients between them using security groups.
 
 2. **Enable WinRM in your WECs and WEC clients**
 
@@ -50,27 +50,34 @@ Windows Event Forwarding is often configured in Windows Domains, as this makes t
 
 5. **Create a source-initiated subscription**
 
+On the WEC:
 
+1. Run `wecutil qc` to configure and start the Windows Event Collector service.
+2. Open Event Viewer, right-click `Subscriptions` and select `Create Subscription`.
+3. Select `Source computer initiated` and click `Select Computer Groups` to add the security group that contains the WEC clients' computer accounts.
+4. Click `Select Events` and choose the logs or paste an XML query (for example, one from the [WEF Management Tool QueriesDB](./WefManagementTool/QueriesDB)).
+5. Keep `Forwarded Events` as the destination log, or select a custom channel.
+6. Under `Advanced`, choose the delivery optimization (`Normal`, `Minimize Bandwidth` or `Minimize Latency`).
 
 6. **Troubleshoot and test**
 
 Once you implemented everything, you must likely find that the service isn't working as expected. In bad scenarios you will likely see a warning sign (`⚠️`) meaning that the collector subscriptions didn't work for some reason.
 
-In any case, you have two important sources of information to troublesoot Windows Event Forwarding itself. Review the logs:
+In any case, you have two important sources of information to troubleshoot Windows Event Forwarding itself. Review the logs:
 
-1. `Microsoft-Windows-Eventlog-ForwardingPlugin/Operational`: Provides information about forwarding issues. You wil; want to review this log file in the WEC clients, but often events can also generate in the WEC too, and will appear here.
-2. `Microsoft-Windows-EventCollector/Operational`: Provides information about the collector. As a personal side note, during my tests, I found events in this log in very rare ocasions.
+1. `Microsoft-Windows-Eventlog-ForwardingPlugin/Operational`: Provides information about forwarding issues. You will want to review this log file in the WEC clients, but often events can also generate in the WEC too, and will appear here.
+2. `Microsoft-Windows-EventCollector/Operational`: Provides information about the collector. As a personal side note, during my tests, I found events in this log in very rare occasions.
 
 Depending on the issues you are having you'll find various events that may help you track the issue with WEF. As a suggestion, always verify that:
 
 1. You do not have connection issues.
     - Try pinging your WEC from a client (You'll need to allow ICMP in the Firewall of the WEC).
     - It is even better if you try with `winrm`. Use the command `winrm identify -remote:<WEC Hostname>` to check if the WinRM service is running in the WEC server.
-2. The appropiate settings are applied in the problematic computer.
+2. The appropriate settings are applied in the problematic computer.
     - This includes Security Groups (SG) and Group Policy Objects (GPOs). Remember that computer settings enforced via GPO often require system reboot to be applied. The same occurs with SG whose members are computer objects.
     - If using a DC to enforce settings across systems, verify using the command `gpresult`. Use the parameters `/scope:computer /r` to get a summary of the computer settings.
 3. Try rebooting your computer. Often, some settings need system reboot to apply changes or reevaluate domain resources (like kerberos tickets).
-4. If anything of this resolve your issues, your problem may be more case-specific. Review the following subsections and identify which scenario is more similar to yours.
+4. If none of this resolves your issues, your problem may be more case-specific. Review the following subsections and identify which scenario is more similar to yours.
 
 ### URI Misconfiguration
 
@@ -78,7 +85,7 @@ WEF may fail when there is a misconfiguration with the Subscription Manager Addr
 
 Review the configuration and make sure you type the correct transport protocol and port. If that's correct, you may have a typo somewhere in the URI.
 
-If the URI is correct, make sure the configuration reached the client computer. It had happened to me that the computer security group membership that is specified when creating subscriptions isn't applied immediatelly.
+If the URI is correct, make sure the configuration reached the client computer. It had happened to me that the computer security group membership that is specified when creating subscriptions isn't applied immediately.
 
 ### WinRM issues
 
@@ -126,12 +133,12 @@ wevtutil.exe gl <LogName>
 PS C:\Users\Administrator> wevtutil.exe gl Security
 name: Security
 
-[Output ommited]
+[Output omitted]
 
 channelAccess: O:BAG:SYD:(A;;0xf0005;;;SY)(A;;0x5;;;BA)(A;;0x1;;;S-1-5-32-573)(A;;0x1;;;S-1-5-20) 
 # (A;;0x1;;;S-1-5-20) -> The Network Service (S-1-5-20) is allowed (A) for read (0x1) operations.
 
-[Remaining output ommited...]
+[Remaining output omitted...]
 ```
 
 3. Changing access rights to a log file requires system restart. Reboot your computer.
@@ -148,9 +155,9 @@ Granting read permissions to the Security Log was easy via GPO because there was
 
 You can check [this webpage](https://learn.microsoft.com/en-us/troubleshoot/windows-server/group-policy/set-event-log-security-locally-or-via-group-policy#configure-event-log-security-locally) for more information on how to grant permissions to an event log via the Windows Registry. It is highly possible that the Event Log Reader group or the Network Service do not have read access to a channel specified in the subscription pointed out in the event message (You can use `wevtutil.exe` to verify).
 
-Based on experience, a subscription will trigger an `EventID 103: The subscription <Subscription Name> is unsubscribed.` in the `Microsoft-Windows-Eventlog-ForwardingPlugin/Operational` log of the WEC client if none of the queries can be executed (because of a client-side issue). The subscription is then moved to a pasive *disabled* state.
+Based on experience, a subscription will trigger an `EventID 103: The subscription <Subscription Name> is unsubscribed.` in the `Microsoft-Windows-Eventlog-ForwardingPlugin/Operational` log of the WEC client if none of the queries can be executed (because of a client-side issue). The subscription is then moved to a passive *disabled* state.
 
-If at least one query can be executed, instead of an event id 103, the event will be `EventID 101: The subscription <Subscription Name> is created, but one or more channels in the query could not be read at this time.`. Again, the reason of one queries working and others not is very likely to be permission issues with the `Network Service` accessing some privileged or sensible logs.
+If at least one query can be executed, instead of an event id 103, the event will be `EventID 101: The subscription <Subscription Name> is created, but one or more channels in the query could not be read at this time.`. Again, the reason of one queries working and others not is very likely to be permission issues with the `Network Service` accessing some privileged or sensitive logs.
 
 ### Everything looks fine but my collector still does not have any client connected to it
 

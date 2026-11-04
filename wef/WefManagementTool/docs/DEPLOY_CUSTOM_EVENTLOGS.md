@@ -1,11 +1,11 @@
 # Deploy custom event logs
 
-## Write-WecEventManifest Module
-`Write-WecEventManifest` assists in the creation of valid ETW-compliant Windows Event Manifest files. It supports interactive and automatic modes, allowing the user to define provider metadata, event channel paths, and symbol naming conventions. This manifest can be later imported using wevtutil or compiled with the Message Compiler (mc.exe).
+## Write-EventManifestFile Module
+`Write-EventManifestFile` assists in the creation of valid ETW-compliant Windows Event Manifest files. It supports interactive and automatic modes, allowing the user to define provider metadata, event channel paths, and symbol naming conventions. This manifest can be later imported using wevtutil or compiled with the Message Compiler (mc.exe).
 
 ### How to use?
 
-Upon execution of `Write-WecEventManifest` (without any optional argument), you will be asked to enter the **PROVIDER NAME** that you want to add to windows logs.
+Upon execution of `Write-EventManifestFile` (without any optional argument), you will be asked to enter the **PROVIDER NAME** that you want to add to windows logs.
 
 ```diff
 + [Suggestion] Provider names should follow the pattern [WEC Common Name]-[Context]-[Target]. For example, `Event Collector-Domain-Clents` or 'Event Collector-NonDomain-Servers'. 
@@ -80,7 +80,7 @@ Finally, deploy the custom event manifest by running the modules `Build-WecEvent
 
 ## Build-WecEventManifestDll Module
 
-This module will use the compiler tools `csc.exe`, `mc.exe`, and `rc.exe` to convert the `MAN` file created with `Write-WecEventManifest` to a `DLL` binary file.
+This module will use the compiler tools `csc.exe`, `mc.exe`, and `rc.exe` to convert the `MAN` file created with `Write-EventManifestFile` to a `DLL` binary file.
 
 ## Install-WecEventManifestDll Module
 
@@ -88,6 +88,6 @@ This module will follow a series of secure steps to install the `DLL` binary fil
 
 Upon successful installation, you will be able to see the new event logs in the Event Viewer application.
 
-## Write-WecEventManifest Module
+## Set-WecEventChannels Module
 
-This module will set up the actual files where the logs are going to be stored. You'll notice that when you executed `Write-WecEventManifest`, a text file `Channels.txt` was generated alongside the `MAN` file. `Write-WecEventManifest` will read this file and use the name of the channels to create the log files, by default under `C:\Event Collector Logs`.
+This module will set up the actual files where the logs are going to be stored. You'll notice that when you executed `Write-EventManifestFile`, a text file `Channels.txt` was generated alongside the `MAN` file. `Write-EventManifestFile` will read this file and use the name of the channels to create the log files, by default under `C:\Event Collector Logs`.
